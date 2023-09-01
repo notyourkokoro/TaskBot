@@ -1,8 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.filters.not_completed_callback import NotCompleted
-from app.filters.simple_tasks_callbacks import DeleteSimpleTask, BackToSimpleTaskList
+from app.filters.tasks_callbacks import DeleteSimpleTask, BackToSimpleTaskList, AddUserInTask
 
 
 async def current_task_keyboard(user_id: int, creator_id: int, task_id: int) -> InlineKeyboardMarkup:
@@ -15,7 +14,7 @@ async def current_task_keyboard(user_id: int, creator_id: int, task_id: int) -> 
         kb_builder.row(InlineKeyboardButton(text='Удалить',
                                             callback_data=DeleteSimpleTask(task_id=task_id).pack()),
                        InlineKeyboardButton(text='Добавить пользователя',
-                                            callback_data=NotCompleted().pack()),
+                                            callback_data=AddUserInTask(task_id=task_id).pack()),
                        width=2)
 
     # добавление кнопки "Назад"

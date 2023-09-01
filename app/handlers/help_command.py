@@ -8,7 +8,7 @@ help_router = Router()
 
 
 @help_router.message(Command('help'))
-async def create_task(message: Message):
+async def help_command(message: Message):
     """Функция для обработки команды /help"""
 
     await message.answer(LEXICON_HELP_COMMAND['help'])

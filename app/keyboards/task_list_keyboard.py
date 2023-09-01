@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.filters.none_callback import NoneCallbackData
-from app.filters.simple_tasks_callbacks import (PrevSimpleList, NextSimpleList, CurrentSimpleTask)
+from app.filters.tasks_callbacks import (PrevSimpleList, NextSimpleList, CurrentSimpleTask)
 
 
 async def tasks_keyboard(user_id: int, tasks: List,

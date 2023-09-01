@@ -51,8 +51,8 @@ async def main():
         usr2 = await session.scalar(select(User).options(selectinload(User.tasks_rel)).where(User.id == 2))
 
         # присвоение "простых" задач пользователям
-        usr1.simple_tasks_rel = [tsk1, tsk2, tsk5]
-        usr2.simple_tasks_rel = [tsk3, tsk4, tsk5, tsk1]
+        usr1.tasks_rel = [tsk1, tsk2, tsk5]
+        usr2.tasks_rel = [tsk3, tsk4, tsk5, tsk1]
 
 
 if __name__ == '__main__':

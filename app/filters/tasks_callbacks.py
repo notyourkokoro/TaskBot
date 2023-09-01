@@ -22,3 +22,7 @@ class DeleteSimpleTask(CallbackData, prefix='delete_simple_task'):
 
 class BackToSimpleTaskList(CallbackData, prefix='back_to_simple_tasks'):
     pass
+
+
+class AddUserInTask(CallbackData, prefix='add_user'):
+    task_id: int

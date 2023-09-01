@@ -1,14 +1,17 @@
-from aiogram import Router
-from aiogram.filters import Command
+from aiogram import Router, F
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from app.database.requests.task_requests import delete_task, select_task
+from app.database.requests.task_requests import delete_task, select_task, add_task_in_user
 from app.database.requests.user_requests import select_user_with_tasks
-from app.filters.simple_tasks_callbacks import (NextSimpleList, PrevSimpleList,
-                                                CurrentSimpleTask, DeleteSimpleTask, BackToSimpleTaskList)
+from app.filters.tasks_callbacks import (NextSimpleList, PrevSimpleList,
+                                         CurrentSimpleTask, DeleteSimpleTask,
+                                         BackToSimpleTaskList, AddUserInTask)
 from app.keyboards.task_list_keyboard import tasks_keyboard
 from app.keyboards.task_keyboard import current_task_keyboard
 from app.lexicon.lexicon_commands import LEXICON_TASKS_COMMAND
+from app.states.add_state import AddUserInTaskState
 from app.utils.task_list import create_task_list
 
 tasks_router = Router()
@@ -99,3 +102,38 @@ async def back_to_simple_task_list(callback: CallbackQuery):
 
     await create_task_list(callback.message.edit_text, callback.message.chat.id)
     await callback.answer()
+
+
+@tasks_router.callback_query(AddUserInTask.filter())
+async def start_add_user_in_task(callback: CallbackQuery, callback_data: AddUserInTask,state: FSMContext):
+    """
+    Функция, которая начинает процесс
+    добавления нового пользователя
+    для выбранной задачи
+    """
+
+    # добавляем ID задачи в состояние
+    await state.update_data(task_id=callback_data.task_id)
+
+    await callback.message.edit_text(text=LEXICON_TASKS_COMMAND['start_add_user_in_task'])
+
+    # устанавливаем состояние ожидания ввода ID
+    await state.set_state(AddUserInTaskState.tg_id)
+
+
+@tasks_router.message(StateFilter(AddUserInTaskState.tg_id), F.text.isdigit())
+async def check_and_add_user(message: Message, state: FSMContext):
+    tg_id = int(message.text)
+    data = await state.get_data()
+
+    result = await add_task_in_user(tg_id=tg_id, task_id=data['task_id'])
+    if not result:
+        await message.answer(text=LEXICON_TASKS_COMMAND['successful_add'].format(tg_id=tg_id))
+        await state.clear()
+    else:
+        await message.answer(text=LEXICON_TASKS_COMMAND[result].format(tg_id=tg_id))
+
+
+@tasks_router.message(StateFilter(AddUserInTaskState.tg_id))
+async def error_add_user(message: Message):
+    await message.answer(text=LEXICON_TASKS_COMMAND['add_user_err'])

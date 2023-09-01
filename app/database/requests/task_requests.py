@@ -2,7 +2,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 
 from app.database.connect import async_session
-from app.database.models import Task, User
+from app.database.models import Task, User, UserTask
 from app.database.requests.base_requests import select_one
 
 
@@ -18,6 +18,25 @@ async def add_task(tg_id: int, title: str):
         session.add(task)
 
         user_with_tasks.tasks_rel.append(task)
+
+
+async def add_task_in_user(tg_id: int, task_id: int) -> None | str:
+    """Добавление выбранной задачи к выбранному пользователю"""
+
+    async with async_session.begin() as session:
+        user_with_tasks = await session.scalar(
+            select(User).options(selectinload(User.tasks_rel)).where(User.tg_id == tg_id)
+        )
+
+        if user_with_tasks:
+            task = await session.scalar(select(Task).where(Task.id == task_id))
+            if task in user_with_tasks.tasks_rel:
+                return 'user_in_task'
+
+            user_with_tasks.tasks_rel.append(task)
+
+            return None
+        return 'unsuccessful_add'
 
 
 # async def all_tasks(tg_id: int) -> List:
